@@ -6,130 +6,221 @@
     <title>LIBERO Robot Learning | ACT Policy Experiments</title>
     <meta
       name="description"
-      content="A robotics machine learning case study showing the experiment reasoning behind ACT policy results on LIBERO-Spatial tasks."
+      content="A case-study webpage for ACT policy experiments on LIBERO-Spatial robot manipulation tasks."
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main>
-      <header>
+    <header class="site-header">
+      <nav>
+        <a href="#overview">Overview</a>
+        <a href="#single-task">Single-task</a>
+        <a href="#multi-task">Multi-task</a>
+      </nav>
+      <div class="hero">
         <p class="kicker">Robotics machine learning case study</p>
-        <h1>LIBERO Robot Learning</h1>
+        <h1>Learning ACT policies on LIBERO-Spatial</h1>
         <p>
-          I trained and debugged LeRobot ACT policies for simulated robot manipulation, starting
-          with one bowl-placement task and scaling to a shared policy across all ten
-          LIBERO-Spatial tasks. This page focuses on the experiment reasoning, not just the final
-          metric.
+          This project trains LeRobot ACT policies for simulated robot manipulation. The work is
+          organized as an empirical debugging loop: observe rollout failures, make one targeted
+          change, then verify the change on benchmark initial states.
         </p>
-      </header>
+      </div>
+    </header>
 
-      <section>
-        <h2>Result Summary</h2>
-        <ul class="stats">
-          <li><strong>82%</strong> best single-task success: 41 / 50 benchmark episodes.</li>
-          <li><strong>69.4%</strong> best verified multitask mean across ten spatial tasks.</li>
-          <li><strong>62,250</strong> multitask frames converted into a local LeRobot dataset.</li>
-          <li><strong>10</strong> LIBERO-Spatial tasks conditioned by one shared ACT policy.</li>
-        </ul>
+    <main>
+      <section id="overview" class="section">
+        <div class="section-heading">
+          <p class="kicker">Project setup</p>
+          <h2>Dataset, task, and environment</h2>
+        </div>
+        <div class="overview-grid">
+          <article>
+            <h3>Dataset</h3>
+            <p>
+              LIBERO demonstration data was converted into local LeRobot datasets with agent-view
+              RGB, wrist RGB, robot state, actions, and task IDs for multitask conditioning.
+            </p>
+          </article>
+          <article>
+            <h3>Task family</h3>
+            <p>
+              The experiments focus on LIBERO-Spatial bowl-placement tasks. The single-task track
+              starts with placing the black bowl on the plate; the multitask track covers all ten
+              spatial variants.
+            </p>
+          </article>
+          <article>
+            <h3>Environment</h3>
+            <p>
+              Evaluation runs in LIBERO off-screen simulation on pruned benchmark initial states,
+              not demonstration starts, so reported success reflects benchmark rollout behavior.
+            </p>
+          </article>
+        </div>
+        <div class="overview-stats">
+          <span><strong>62,250</strong> multitask frames</span>
+          <span><strong>10</strong> spatial tasks</span>
+          <span><strong>2</strong> RGB camera views</span>
+          <span><strong>50</strong> eval episodes per benchmark</span>
+        </div>
       </section>
 
-      <section>
-        <h2>Thinking Process</h2>
-        <ol class="process">
-          <li>
-            <strong>Make ACT run end to end.</strong>
-            I converted LIBERO HDF5 demonstrations into a LeRobot image-backed dataset, then wrote
-            local training and evaluation entrypoints so I could iterate without fighting import,
-            cache, and environment issues.
-          </li>
-          <li>
-            <strong>Inspect failures instead of only tuning hyperparameters.</strong>
-            Early rollouts usually reached the objects, but the policy failed around grasp
-            acquisition and release timing. That shifted the next experiment toward the high-value
-            moments in the trajectory.
-          </li>
-          <li>
-            <strong>Change the data sampling around the observed failure.</strong>
-            Oversampling gripper-transition windows improved the single-task benchmark from 44% to
-            62%, which supported the diagnosis that the model needed more signal around contact and
-            handoff moments.
-          </li>
-          <li>
-            <strong>Ablate the objective.</strong>
-            Reducing ACT KL weight from 10.0 to 5.0 lifted success to 82%. Lowering it further to
-            2.0 dropped success to 76%, so the best setting came from an ablation rather than a
-            monotonic assumption.
-          </li>
-          <li>
-            <strong>Scale to multitask and treat negative results as evidence.</strong>
-            A task-conditioned policy worked well on several variants, but simple oversampling of
-            weak tasks collapsed the mean from 69.4% to 22.0%. That made the imbalance explanation
-            less convincing and motivated cleaner architecture ablations.
-          </li>
-        </ol>
+      <section id="single-task" class="case-section">
+        <div class="case-header">
+          <div>
+            <p class="kicker">Section 1</p>
+            <h2>Single-task policy</h2>
+            <p>
+              Goal: make one ACT policy reliably solve the black-bowl placement task, then use
+              rollout failures to decide which training changes are worth testing.
+            </p>
+          </div>
+          <div class="score-card">
+            <span>Best result</span>
+            <strong>82%</strong>
+            <p>41 / 50 benchmark episodes</p>
+          </div>
+        </div>
+
+        <div class="template-grid">
+          <article class="panel">
+            <h3>Thinking Process</h3>
+            <ol>
+              <li>Get ACT training and evaluation running end to end on converted LeRobot data.</li>
+              <li>Review failures instead of only watching loss curves.</li>
+              <li>Notice that many failures happen around grasp acquisition and release timing.</li>
+              <li>Oversample gripper-transition windows to put more training signal on those moments.</li>
+              <li>Reduce ACT KL weight from 10.0 to 5.0 and verify on benchmark initial states.</li>
+            </ol>
+          </article>
+          <article class="panel">
+            <h3>Statistics</h3>
+            <table>
+              <tbody>
+                <tr><th>Initial stable baseline</th><td>44%</td></tr>
+                <tr><th>After transition oversampling</th><td>62%</td></tr>
+                <tr><th>After KL 10.0 -> 5.0</th><td>82%</td></tr>
+                <tr><th>After KL 5.0 -> 2.0</th><td>76%</td></tr>
+              </tbody>
+            </table>
+          </article>
+        </div>
+
+        <div class="video-compare">
+          <article>
+            <div class="video-copy">
+              <p class="label">Before the KL trick</p>
+              <h3>Transition sampling, default KL</h3>
+              <p>Success plateaued at 31 / 50. Remaining failures were sensitive around grasp and placement.</p>
+            </div>
+            <video controls muted playsinline preload="metadata">
+              <source src="assets/videos/single_task_before_kl10_failure.mp4" type="video/mp4" />
+            </video>
+          </article>
+          <article>
+            <div class="video-copy">
+              <p class="label">After the KL trick</p>
+              <h3>Same sampling, lower KL</h3>
+              <p>Reducing the KL penalty gave the policy enough action flexibility to reach 41 / 50.</p>
+            </div>
+            <video controls muted playsinline preload="metadata">
+              <source src="assets/videos/single_task_after_kl5_success.mp4" type="video/mp4" />
+            </video>
+          </article>
+        </div>
       </section>
 
-      <section class="video-section">
-        <h2>Best Single-Task Rollout</h2>
-        <p>
-          Reduced-KL ACT succeeds on benchmark episode 0. This clip was regenerated at higher
-          render resolution for the GitHub Pages version.
-        </p>
-        <video controls muted playsinline preload="metadata">
-          <source src="assets/videos/single_task_after_kl5_success.mp4" type="video/mp4" />
-        </video>
-      </section>
+      <section id="multi-task" class="case-section">
+        <div class="case-header">
+          <div>
+            <p class="kicker">Section 2</p>
+            <h2>Multi-task policy</h2>
+            <p>
+              Goal: train one task-conditioned ACT policy across all ten LIBERO-Spatial tasks and
+              understand why weak tasks do not improve just by sampling them more often.
+            </p>
+          </div>
+          <div class="score-card">
+            <span>Best mean</span>
+            <strong>69.4%</strong>
+            <p>10-task benchmark average</p>
+          </div>
+        </div>
 
-      <section>
-        <h2>Multitask Diagnosis</h2>
-        <p>
-          The shared policy performed strongly on several tabletop variants but struggled on tasks
-          that changed the initial geometry or required more precise extraction.
-        </p>
-        <table>
-          <thead>
-            <tr>
-              <th>Task</th>
-              <th>Scenario</th>
-              <th>Success</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>02</td><td>from table center</td><td>0.94</td></tr>
-            <tr><td>03</td><td>on cookie box</td><td>0.92</td></tr>
-            <tr><td>09</td><td>on wooden cabinet</td><td>0.86</td></tr>
-            <tr><td>00</td><td>between plate and ramekin</td><td>0.82</td></tr>
-            <tr><td>05</td><td>on ramekin</td><td>0.16</td></tr>
-          </tbody>
-        </table>
-      </section>
+        <div class="template-grid">
+          <article class="panel">
+            <h3>Thinking Process</h3>
+            <ol>
+              <li>Add task IDs so one shared policy can condition on the requested spatial task.</li>
+              <li>Check per-task success instead of only the benchmark mean.</li>
+              <li>Identify weak tasks 04, 05, and 09 as the tempting targets for reweighting.</li>
+              <li>Try task-level oversampling and compare against the original task-conditioned baseline.</li>
+              <li>Observe that oversampling collapses the mean, so the next direction becomes cleaner architecture ablations.</li>
+            </ol>
+          </article>
+          <article class="panel">
+            <h3>Statistics</h3>
+            <table>
+              <tbody>
+                <tr><th>Task-conditioned baseline</th><td>69.4%</td></tr>
+                <tr><th>Task oversampling attempt</th><td>22.0%</td></tr>
+                <tr><th>Balanced task batches</th><td>61.4%</td></tr>
+                <tr><th>Shared task embedding</th><td>65.8%</td></tr>
+              </tbody>
+            </table>
+          </article>
+        </div>
 
-      <section class="video-section">
-        <h2>Task 05 Hard Case</h2>
-        <p>
-          Task 05 stayed weak even after a focused rescue attempt. I keep this failure case in the
-          project because it shows the next debugging question: whether the issue is task-specific
-          train/eval mismatch, data conversion, or architecture rather than simple undertraining.
-        </p>
-        <video controls muted playsinline preload="metadata">
-          <source src="assets/videos/task05_single_task_failure.mp4" type="video/mp4" />
-        </video>
-      </section>
+        <div class="task-table">
+          <h3>Baseline per-task behavior</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Task</th>
+                <th>Scenario</th>
+                <th>Success</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>02</td><td>from table center</td><td>0.94</td></tr>
+              <tr><td>03</td><td>on cookie box</td><td>0.92</td></tr>
+              <tr><td>09</td><td>on wooden cabinet</td><td>0.86</td></tr>
+              <tr><td>00</td><td>between plate and ramekin</td><td>0.82</td></tr>
+              <tr><td>05</td><td>on ramekin</td><td>0.16</td></tr>
+            </tbody>
+          </table>
+        </div>
 
-      <section>
-        <h2>Implementation Work</h2>
-        <ul>
-          <li>Converted LIBERO demonstrations into local LeRobot datasets with agent-view RGB, wrist RGB, robot state, actions, and task IDs.</li>
-          <li>Built local ACT training scripts with AMP support, checkpointing, validation, and timing logs.</li>
-          <li>Evaluated on LIBERO pruned initial states, saved rollout videos, and tracked task-level success across the benchmark.</li>
-        </ul>
+        <div class="video-compare">
+          <article>
+            <div class="video-copy">
+              <p class="label">Before the oversampling trick</p>
+              <h3>Task-conditioned baseline</h3>
+              <p>The baseline has a strong mean, but task 05 remains a hard failure case.</p>
+            </div>
+            <video controls muted playsinline preload="metadata">
+              <source src="assets/videos/task05_single_task_failure.mp4" type="video/mp4" />
+            </video>
+          </article>
+          <article>
+            <div class="video-copy">
+              <p class="label">After the oversampling trick</p>
+              <h3>Oversampling weak tasks</h3>
+              <p>The plausible fix backfires: benchmark mean drops from 69.4% to 22.0%.</p>
+            </div>
+            <video controls muted playsinline preload="metadata">
+              <source src="assets/videos/multitask_bad_oversampling_failure.mp4" type="video/mp4" />
+            </video>
+          </article>
+        </div>
       </section>
-
-      <footer>
-        <a href="https://github.com/vincent317/LIBERO-ROBOT">GitHub repository</a>
-        <a href="https://github.com/vincent317/LIBERO-ROBOT/blob/main/TRAINIG_PROGRESS.md">Single-task log</a>
-        <a href="https://github.com/vincent317/LIBERO-ROBOT/blob/main/MULTI_TASK_TRAINING_PROGRESS.md">Multitask log</a>
-      </footer>
     </main>
+
+    <footer class="site-footer">
+      <a href="https://github.com/vincent317/LIBERO-ROBOT">GitHub repository</a>
+      <a href="https://github.com/vincent317/LIBERO-ROBOT/blob/main/TRAINIG_PROGRESS.md">Single-task log</a>
+      <a href="https://github.com/vincent317/LIBERO-ROBOT/blob/main/MULTI_TASK_TRAINING_PROGRESS.md">Multi-task log</a>
+    </footer>
   </body>
 </html>
