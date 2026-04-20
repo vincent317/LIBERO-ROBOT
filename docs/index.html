@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LIBERO Robot Learning | ACT Policy Experiments</title>
+    <meta
+      name="description"
+      content="An interview-oriented robotics machine learning case study: training and debugging ACT policies on LIBERO-Spatial manipulation tasks."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <nav class="topbar" aria-label="Primary navigation">
+        <a href="#results">Results</a>
+        <a href="#experiments">Experiments</a>
+        <a href="#multitask">Multitask</a>
+        <a href="#implementation">Implementation</a>
+      </nav>
+      <div class="hero-grid">
+        <section class="hero-copy">
+          <p class="eyebrow">Robotics machine learning case study</p>
+          <h1>LIBERO Robot Learning</h1>
+          <p class="lede">
+            I trained and debugged LeRobot ACT policies for simulated robot manipulation, starting
+            with one bowl-placement task and scaling to a shared policy across all ten
+            LIBERO-Spatial tasks.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#experiments">View the experiment story</a>
+            <a class="button secondary" href="https://github.com/vincent317/LIBERO-ROBOT">Open the repo</a>
+          </div>
+        </section>
+        <section class="hero-video" aria-label="Successful rollout after KL tuning">
+          <video controls muted playsinline preload="metadata">
+            <source src="assets/videos/single_task_after_kl5_success.mp4" type="video/mp4" />
+          </video>
+          <p>Best single-task policy: reduced-KL ACT succeeds on episode 0 in 84 steps.</p>
+        </section>
+      </div>
+    </header>
+
+    <main>
+      <section id="results" class="band results-band">
+        <div class="section-heading">
+          <p class="eyebrow">What changed</p>
+          <h2>From a working baseline to benchmarked behavior</h2>
+          <p>
+            The project was not just a training run. It became a loop of diagnosing rollout
+            failures, changing the data or objective, and verifying the change on LIBERO
+            benchmark initial states.
+          </p>
+        </div>
+        <div class="metric-grid">
+          <article class="metric-card">
+            <span class="metric">82%</span>
+            <h3>Best single-task success</h3>
+            <p>41 / 50 benchmark episodes after gripper-transition oversampling plus KL tuning.</p>
+          </article>
+          <article class="metric-card">
+            <span class="metric">69.4%</span>
+            <h3>Best verified multitask mean</h3>
+            <p>One task-conditioned ACT policy across ten LIBERO-Spatial tasks.</p>
+          </article>
+          <article class="metric-card">
+            <span class="metric">62,250</span>
+            <h3>Multitask frames</h3>
+            <p>Converted 500 demonstrations into a local LeRobot dataset with two RGB views.</p>
+          </article>
+          <article class="metric-card">
+            <span class="metric">10</span>
+            <h3>Tasks in one policy</h3>
+            <p>Discrete task IDs conditioned the shared ACT transformer encoder and decoder.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="experiments" class="band">
+        <div class="section-heading">
+          <p class="eyebrow">Experiment loop</p>
+          <h2>Every improvement came from a specific failure mode</h2>
+          <p>
+            I used rollout review to move from generic hyperparameter tuning toward targeted
+            interventions: shorter action chunks, gripper-transition sampling, and a lower ACT KL
+            penalty.
+          </p>
+        </div>
+
+        <div class="timeline">
+          <article class="timeline-item">
+            <div class="timeline-marker">1</div>
+            <div>
+              <h3>Get ACT running end to end</h3>
+              <p>
+                I converted LIBERO HDF5 demonstrations into a LeRobot image-backed dataset and
+                wrote local training and eval entrypoints to work around environment and cache
+                issues. The first stable recipe used two RGB cameras, robot state, and chunked
+                action prediction.
+              </p>
+            </div>
+          </article>
+          <article class="timeline-item">
+            <div class="timeline-marker">2</div>
+            <div>
+              <h3>Diagnose failed rollouts</h3>
+              <p>
+                The main failure was not the policy reaching the scene; it was grasp acquisition
+                after contact. That pushed the next experiment toward gripper transition moments
+                rather than broad data reweighting.
+              </p>
+            </div>
+          </article>
+          <article class="timeline-item">
+            <div class="timeline-marker">3</div>
+            <div>
+              <h3>Sample the moments that matter</h3>
+              <p>
+                Oversampling both grasp and release transitions improved the single-task benchmark
+                from 44% to 62%, showing that failure analysis was pointing at the right part of
+                the trajectory.
+              </p>
+            </div>
+          </article>
+          <article class="timeline-item">
+            <div class="timeline-marker">4</div>
+            <div>
+              <h3>Tune the objective, not just the data</h3>
+              <p>
+                Reducing ACT KL weight from 10.0 to 5.0 lifted success to 82%. Pushing it lower to
+                2.0 dropped success to 76%, so the best result came from an ablation, not from
+                assuming monotonic improvement.
+              </p>
+            </div>
+          </article>
+        </div>
+
+        <div class="comparison">
+          <article class="video-panel">
+            <div class="video-copy">
+              <p class="eyebrow">Before</p>
+              <h3>Transition oversampling, default KL</h3>
+              <p>
+                The policy learned many successful trajectories, but benchmark success plateaued
+                at 62%. The remaining failures exposed sensitivity around grasp and placement.
+              </p>
+              <dl>
+                <div><dt>Success</dt><dd>31 / 50</dd></div>
+                <div><dt>Rate</dt><dd>0.62</dd></div>
+              </dl>
+            </div>
+            <video controls muted playsinline preload="metadata">
+              <source src="assets/videos/single_task_before_kl10_failure.mp4" type="video/mp4" />
+            </video>
+          </article>
+          <article class="video-panel accent">
+            <div class="video-copy">
+              <p class="eyebrow">After</p>
+              <h3>Same sampling, lower KL weight</h3>
+              <p>
+                Reducing the KL penalty gave the policy enough action flexibility to complete more
+                benchmark initial states while keeping the same task and dataset.
+              </p>
+              <dl>
+                <div><dt>Success</dt><dd>41 / 50</dd></div>
+                <div><dt>Rate</dt><dd>0.82</dd></div>
+              </dl>
+            </div>
+            <video controls muted playsinline preload="metadata">
+              <source src="assets/videos/single_task_after_kl5_success.mp4" type="video/mp4" />
+            </video>
+          </article>
+        </div>
+      </section>
+
+      <section id="multitask" class="band muted-band">
+        <div class="section-heading">
+          <p class="eyebrow">Scaling up</p>
+          <h2>Multitask learning exposed a different problem</h2>
+          <p>
+            The shared policy performed strongly on several tabletop variants but struggled on
+            tasks that changed the initial geometry or required more precise extraction.
+          </p>
+        </div>
+        <div class="task-layout">
+          <article class="result-table">
+            <h3>Task-conditioned ACT baseline</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Task</th>
+                  <th>Scenario</th>
+                  <th>Success</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>02</td><td>from table center</td><td>0.94</td></tr>
+                <tr><td>03</td><td>on cookie box</td><td>0.92</td></tr>
+                <tr><td>09</td><td>on wooden cabinet</td><td>0.86</td></tr>
+                <tr><td>00</td><td>between plate and ramekin</td><td>0.82</td></tr>
+                <tr><td>05</td><td>on ramekin</td><td>0.16</td></tr>
+              </tbody>
+            </table>
+          </article>
+          <article class="insight-block">
+            <h3>The lesson was not “oversample harder”</h3>
+            <p>
+              I tried task-level oversampling for weak tasks 04, 05, and 09. It looked plausible,
+              but benchmark mean success collapsed from 69.4% to 22.0%. That result made the
+              imbalance story less convincing and pushed the project toward cleaner architecture
+              ablations.
+            </p>
+            <video controls muted playsinline preload="metadata">
+              <source src="assets/videos/multitask_bad_oversampling_failure.mp4" type="video/mp4" />
+            </video>
+          </article>
+        </div>
+
+        <div class="learning-grid">
+          <article>
+            <h3>Balanced batches</h3>
+            <p>
+              Even per-task batches isolated sampling effects, but the comparable benchmark
+              result dropped to 61.4%. More balanced gradients did not automatically improve
+              rollout success.
+            </p>
+          </article>
+          <article>
+            <h3>Shared task embedding</h3>
+            <p>
+              Adding the same task embedding to the ACT/VAE encoder, transformer encoder, and
+              decoder trained stably and reached 65.8% at the comparable checkpoint.
+            </p>
+          </article>
+          <article>
+            <h3>VAE-only task ID</h3>
+            <p>
+              A narrower architecture ablation kept validation loss almost tied with the original
+              baseline. It is the cleanest pending benchmark candidate because it changes one
+              conditioning location.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="band">
+        <div class="section-heading">
+          <p class="eyebrow">Hard-case debugging</p>
+          <h2>Negative results became useful evidence</h2>
+          <p>
+            The weakest multitask scenario was task 05: picking up a bowl on a ramekin. I trained a
+            dedicated single-task policy with the best known single-task recipe, and it still
+            reached 0 / 50. That pointed toward task-specific train/eval mismatch or data conversion
+            issues rather than simple undertraining.
+          </p>
+        </div>
+        <article class="wide-video">
+          <div>
+            <h3>Task 05 single-task rescue attempt</h3>
+            <p>
+              This failure clip is included because the project’s value is not only the best
+              result. It shows how I separate a tempting hypothesis from evidence and keep the
+              next debugging step concrete.
+            </p>
+          </div>
+          <video controls muted playsinline preload="metadata">
+            <source src="assets/videos/task05_single_task_failure.mp4" type="video/mp4" />
+          </video>
+        </article>
+      </section>
+
+      <section id="implementation" class="band implementation-band">
+        <div class="section-heading">
+          <p class="eyebrow">Engineering details</p>
+          <h2>What I built around the model</h2>
+        </div>
+        <div class="implementation-grid">
+          <article>
+            <h3>Data conversion</h3>
+            <p>
+              Converted LIBERO demos into LeRobot datasets with agent-view RGB, wrist RGB, robot
+              state, actions, and task IDs for multitask conditioning.
+            </p>
+          </article>
+          <article>
+            <h3>Local ACT training</h3>
+            <p>
+              Wrote local ACT-only trainers to avoid brittle import paths, redirect caches, support
+              AMP, and log timing around DataLoader, host prep, and GPU steps.
+            </p>
+          </article>
+          <article>
+            <h3>Benchmark evaluation</h3>
+            <p>
+              Evaluated on LIBERO pruned initial states rather than demo starts, saved rollout
+              videos, and tracked task-level success for the full spatial benchmark.
+            </p>
+          </article>
+        </div>
+        <div class="repo-links">
+          <a href="https://github.com/vincent317/LIBERO-ROBOT/blob/main/TRAINIG_PROGRESS.md">Single-task log</a>
+          <a href="https://github.com/vincent317/LIBERO-ROBOT/blob/main/MULTI_TASK_TRAINING_PROGRESS.md">Multitask log</a>
+          <a href="https://github.com/vincent317/LIBERO-ROBOT/blob/main/train_libero_act.py">Trainer</a>
+          <a href="https://github.com/vincent317/LIBERO-ROBOT/blob/main/eval_libero_act.py">Evaluator</a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        Built from the LIBERO-ROBOT worklog as an interview case study in robotics machine
+        learning, imitation learning, and empirical debugging.
+      </p>
+    </footer>
+  </body>
+</html>
