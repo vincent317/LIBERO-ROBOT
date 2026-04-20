@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+
+# Local/generated data and experiment artifacts
+outputs/
+eval_outputs/
+lerobot_datasets/
+
+# Common training/checkpoint outputs
+*.ckpt
+*.pt
+*.pth
+*.safetensors
+*.npz
+*.npy
+
+# Local environment files
+.codex
+.env
+.venv/
+venv/
