@@ -28,6 +28,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--num-episodes-per-task", type=int, default=50)
     parser.add_argument("--max-steps", type=int, default=300)
     parser.add_argument("--device", default=None)
+    parser.add_argument("--render-height", type=int, default=128)
+    parser.add_argument("--render-width", type=int, default=128)
+    parser.add_argument("--video-scale", type=int, default=1)
     parser.add_argument(
         "--save-failure-videos",
         dest="save_failure_videos",
@@ -62,6 +65,9 @@ def _evaluate_task_shard(job: dict[str, object]) -> list[dict[str, object]]:
     num_episodes_per_task = int(job["num_episodes_per_task"])
     max_steps = int(job["max_steps"])
     save_failure_videos = bool(job["save_failure_videos"])
+    render_height = int(job["render_height"])
+    render_width = int(job["render_width"])
+    video_scale = int(job["video_scale"])
     device_arg = job["device"]
 
     from eval_libero_act import (
@@ -108,7 +114,7 @@ def _evaluate_task_shard(job: dict[str, object]) -> list[dict[str, object]]:
         task_id = int(task_spec["task_id"])
         task_output_dir = output_dir / f"task_{task_id:02d}_{task_spec['task_name']}"
         task_output_dir.mkdir(parents=True, exist_ok=True)
-        env, task, init_states = prepare_env(task_id, 128, 128)
+        env, task, init_states = prepare_env(task_id, render_height, render_width)
         task_text = str(task_spec["language"])
         task_index_tensor = torch.tensor([task_id], device=device, dtype=torch.long)
         num_episodes = min(num_episodes_per_task, len(init_states))
@@ -162,7 +168,7 @@ def _evaluate_task_shard(job: dict[str, object]) -> list[dict[str, object]]:
                 episode_timing["success_check_s"] += now_s() - t0
                 if save_failure_videos:
                     t0 = now_s()
-                    video_frames.append(maybe_upscale_frame(obs["agentview_image"], 1))
+                    video_frames.append(maybe_upscale_frame(obs["agentview_image"], video_scale))
                     episode_timing["video_frame_s"] += now_s() - t0
                 if success:
                     break
@@ -231,6 +237,9 @@ def main() -> None:
                 "num_episodes_per_task": args.num_episodes_per_task,
                 "max_steps": args.max_steps,
                 "save_failure_videos": args.save_failure_videos,
+                "render_height": args.render_height,
+                "render_width": args.render_width,
+                "video_scale": args.video_scale,
                 "device": args.device,
             }
         )
@@ -245,6 +254,9 @@ def main() -> None:
                 "num_episodes_per_task": args.num_episodes_per_task,
                 "max_steps": args.max_steps,
                 "save_failure_videos": args.save_failure_videos,
+                "render_height": args.render_height,
+                "render_width": args.render_width,
+                "video_scale": args.video_scale,
                 "device": args.device,
             }
             for shard in _chunk_task_specs(task_specs, args.num_workers)
