@@ -126,7 +126,7 @@ main {
 }
 
 .overview-grid,
-.template-grid,
+.stat-grid,
 .video-compare {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -134,7 +134,8 @@ main {
 }
 
 .overview-grid article,
-.panel,
+.thinking-block,
+.stat-card,
 .score-card,
 .task-table,
 .video-compare article {
@@ -144,7 +145,8 @@ main {
 }
 
 .overview-grid article,
-.panel,
+.thinking-block,
+.stat-card,
 .score-card,
 .task-table {
   padding: 24px;
@@ -198,9 +200,32 @@ strong {
   margin-bottom: 0;
 }
 
-.template-grid {
-  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+.thinking-block {
   margin-bottom: 24px;
+}
+
+.thinking-block ol {
+  max-width: 920px;
+}
+
+.stat-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 24px;
+}
+
+.stat-card span {
+  display: block;
+  min-height: 42px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.stat-card strong {
+  display: block;
+  margin-top: 12px;
+  color: var(--accent);
+  font-size: 2rem;
+  line-height: 1;
 }
 
 ol,
@@ -282,7 +307,7 @@ video {
 
   .overview-grid,
   .overview-stats,
-  .template-grid,
+  .stat-grid,
   .case-header,
   .video-compare {
     grid-template-columns: 1fr;

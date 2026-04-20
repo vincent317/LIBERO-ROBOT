@@ -83,27 +83,34 @@
           </div>
         </div>
 
-        <div class="template-grid">
-          <article class="panel">
-            <h3>Thinking Process</h3>
-            <ol>
-              <li>Get ACT training and evaluation running end to end on converted LeRobot data.</li>
-              <li>Review failures instead of only watching loss curves.</li>
-              <li>Notice that many failures happen around grasp acquisition and release timing.</li>
-              <li>Oversample gripper-transition windows to put more training signal on those moments.</li>
-              <li>Reduce ACT KL weight from 10.0 to 5.0 and verify on benchmark initial states.</li>
-            </ol>
+        <article class="thinking-block">
+          <p class="label">Single-task thinking process</p>
+          <h3>From rollout review to targeted ablation</h3>
+          <ol>
+            <li>Get ACT training and evaluation running end to end on converted LeRobot data.</li>
+            <li>Review failures instead of only watching loss curves.</li>
+            <li>Notice that many failures happen around grasp acquisition and release timing.</li>
+            <li>Oversample gripper-transition windows to put more training signal on those moments.</li>
+            <li>Reduce ACT KL weight from 10.0 to 5.0 and verify on benchmark initial states.</li>
+          </ol>
+        </article>
+
+        <div class="stat-grid">
+          <article class="stat-card">
+            <span>Initial stable baseline</span>
+            <strong>44%</strong>
           </article>
-          <article class="panel">
-            <h3>Statistics</h3>
-            <table>
-              <tbody>
-                <tr><th>Initial stable baseline</th><td>44%</td></tr>
-                <tr><th>After transition oversampling</th><td>62%</td></tr>
-                <tr><th>After KL 10.0 -> 5.0</th><td>82%</td></tr>
-                <tr><th>After KL 5.0 -> 2.0</th><td>76%</td></tr>
-              </tbody>
-            </table>
+          <article class="stat-card">
+            <span>After transition oversampling</span>
+            <strong>62%</strong>
+          </article>
+          <article class="stat-card">
+            <span>After KL 10.0 -> 5.0</span>
+            <strong>82%</strong>
+          </article>
+          <article class="stat-card">
+            <span>After KL 5.0 -> 2.0</span>
+            <strong>76%</strong>
           </article>
         </div>
 
@@ -148,27 +155,34 @@
           </div>
         </div>
 
-        <div class="template-grid">
-          <article class="panel">
-            <h3>Thinking Process</h3>
-            <ol>
-              <li>Add task IDs so one shared policy can condition on the requested spatial task.</li>
-              <li>Check per-task success instead of only the benchmark mean.</li>
-              <li>Identify weak tasks 04, 05, and 09 as the tempting targets for reweighting.</li>
-              <li>Try task-level oversampling and compare against the original task-conditioned baseline.</li>
-              <li>Observe that oversampling collapses the mean, so the next direction becomes cleaner architecture ablations.</li>
-            </ol>
+        <article class="thinking-block">
+          <p class="label">Multi-task thinking process</p>
+          <h3>From task imbalance hypothesis to architecture ablations</h3>
+          <ol>
+            <li>Add task IDs so one shared policy can condition on the requested spatial task.</li>
+            <li>Check per-task success instead of only the benchmark mean.</li>
+            <li>Identify weak tasks 04, 05, and 09 as the tempting targets for reweighting.</li>
+            <li>Try task-level oversampling and compare against the original task-conditioned baseline.</li>
+            <li>Observe that oversampling collapses the mean, so the next direction becomes cleaner architecture ablations.</li>
+          </ol>
+        </article>
+
+        <div class="stat-grid">
+          <article class="stat-card">
+            <span>Task-conditioned baseline</span>
+            <strong>69.4%</strong>
           </article>
-          <article class="panel">
-            <h3>Statistics</h3>
-            <table>
-              <tbody>
-                <tr><th>Task-conditioned baseline</th><td>69.4%</td></tr>
-                <tr><th>Task oversampling attempt</th><td>22.0%</td></tr>
-                <tr><th>Balanced task batches</th><td>61.4%</td></tr>
-                <tr><th>Shared task embedding</th><td>65.8%</td></tr>
-              </tbody>
-            </table>
+          <article class="stat-card">
+            <span>Task oversampling attempt</span>
+            <strong>22.0%</strong>
+          </article>
+          <article class="stat-card">
+            <span>Balanced task batches</span>
+            <strong>61.4%</strong>
+          </article>
+          <article class="stat-card">
+            <span>Shared task embedding</span>
+            <strong>65.8%</strong>
           </article>
         </div>
 
