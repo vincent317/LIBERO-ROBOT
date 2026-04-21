@@ -6,11 +6,11 @@ Use this contract whenever editing `docs/index.html` or `docs/styles.css`.
 
 The page must use the clean case-study template:
 
-1. Centered top navigation with exactly these anchors:
+1. Top navigation with exactly these anchors:
    - `Overview`
    - `Single-task`
    - `Multi-task`
-2. Centered intro block:
+2. Intro block:
    - Small kicker
    - Main title
    - One concise project framing paragraph
@@ -55,7 +55,7 @@ The page must use the clean case-study template:
 
 ## CSS Rules
 
-- The top navigation and hero text should be centered on desktop.
+- The top navigation should sit in the page header and the intro should use the same alignment as the `9ac699b` template.
 - Main content width should stay around `1180px`.
 - The two major sections should share the same visual grammar.
 - Use responsive one-column stacking below tablet width.

@@ -11,7 +11,7 @@ When editing the GitHub Pages site for this repo, follow `docs/PAGES_TEMPLATE.md
 
 1. Read `docs/PAGES_TEMPLATE.md` before changing `docs/index.html` or `docs/styles.css`.
 2. Preserve the clean case-study structure:
-   - Centered nav and intro.
+   - Nav and intro alignment matching the `9ac699b` template.
    - Overview of dataset, task family, and environment.
    - One large `Single-task policy` section.
    - One large `Multi-task policy` section.
