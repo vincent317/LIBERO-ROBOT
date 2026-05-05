@@ -1,15 +1,17 @@
 :root {
   color-scheme: light;
-  --ink: #20242a;
-  --muted: #5b6573;
-  --paper: #f4f6f1;
+  --ink: #1f242b;
+  --muted: #596473;
+  --paper: #f5f6f3;
   --surface: #ffffff;
-  --soft: #e8ede4;
-  --line: #d2d9cf;
-  --accent: #2f6b52;
-  --accent-dark: #224d3d;
-  --red: #b95745;
-  --blue: #315f86;
+  --soft: #e8ebf0;
+  --line: #d3d8de;
+  --accent: #1f6f8b;
+  --accent-dark: #194e63;
+  --red: #b85b43;
+  --blue: #325f9c;
+  --gold: #9a6b20;
+  --header: #17212b;
 }
 
 * {
@@ -32,8 +34,16 @@ a {
   color: inherit;
 }
 
+code {
+  padding: 0.08rem 0.28rem;
+  border-radius: 4px;
+  background: rgba(31, 111, 139, 0.1);
+  color: var(--accent-dark);
+  font-size: 0.92em;
+}
+
 .site-header {
-  background: #1f2a27;
+  background: var(--header);
   color: #fff;
 }
 
@@ -53,10 +63,18 @@ nav a,
   font-weight: 700;
 }
 
+nav a {
+  color: rgba(255, 255, 255, 0.86);
+}
+
 .hero {
   width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 82px 0 96px;
+  padding: 84px 0 88px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+  gap: 36px;
+  align-items: center;
 }
 
 .kicker,
@@ -82,7 +100,7 @@ p {
 h1 {
   max-width: 900px;
   margin-bottom: 18px;
-  font-size: clamp(3rem, 7vw, 6.2rem);
+  font-size: clamp(2.6rem, 6.4vw, 5.9rem);
   line-height: 1.02;
 }
 
@@ -103,10 +121,24 @@ td {
   color: var(--muted);
 }
 
-.hero p {
+.hero-copy p {
   max-width: 820px;
   color: rgba(255, 255, 255, 0.84);
   font-size: 1.18rem;
+}
+
+.hero-media {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: #0d1117;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
+}
+
+.hero-media video {
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-top: 0;
 }
 
 main {
@@ -131,6 +163,10 @@ main {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
+}
+
+.overview-grid.two-plus-one {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .overview-grid article,
@@ -264,6 +300,7 @@ td:last-child {
 
 .task-table {
   margin-bottom: 24px;
+  overflow-x: auto;
 }
 
 .task-table table {
@@ -290,6 +327,16 @@ video {
   border-top: 1px solid var(--line);
 }
 
+.infra-table td:nth-child(3),
+.infra-table td:nth-child(4) {
+  white-space: nowrap;
+}
+
+.infra-table td:last-child {
+  color: var(--muted);
+  font-weight: 400;
+}
+
 .site-footer {
   width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
@@ -306,9 +353,11 @@ video {
   }
 
   .overview-grid,
+  .overview-grid.two-plus-one,
   .overview-stats,
   .stat-grid,
   .case-header,
+  .hero,
   .video-compare {
     grid-template-columns: 1fr;
   }

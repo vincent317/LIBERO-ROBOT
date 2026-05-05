@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>LIBERO Robot Learning | ACT Policy Experiments</title>
+    <title>Embodied AI MLInfra | LIBERO Training Systems</title>
     <meta
       name="description"
-      content="A case-study webpage for ACT policy experiments on LIBERO-Spatial robot manipulation tasks."
+      content="A portfolio case study on LIBERO robot-learning training systems: ACT policy training, multitask evaluation, OpenVLA RLDS conversion, and 4-GPU LoRA/FSDP benchmarking."
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -15,83 +15,104 @@
       <nav>
         <a href="#overview">Overview</a>
         <a href="#single-task">Single-task</a>
-        <a href="#multi-task">Multi-task</a>
+        <a href="#multitask">Multi-task</a>
+        <a href="#mlinfra">MLInfra</a>
+        <a href="#evidence">Evidence</a>
       </nav>
       <div class="hero">
-        <p class="kicker">Robotics machine learning case study</p>
-        <h1>Learning ACT policies on LIBERO-Spatial</h1>
-        <p>
-          This project trains LeRobot ACT policies for simulated robot manipulation. The work is
-          organized as an empirical debugging loop: observe rollout failures, make one targeted
-          change, then verify the change on benchmark initial states.
-        </p>
+        <div class="hero-copy">
+          <p class="kicker">Embodied AI MLInfra case study</p>
+          <h1>Building and benchmarking LIBERO robot-learning training systems</h1>
+          <p>
+            This project turns LIBERO manipulation data into reproducible training and evaluation
+            pipelines, then scales the work from single-task ACT policies to multitask ACT and
+            OpenVLA fine-tuning on 4 x NVIDIA L4 GPUs. The emphasis is infrastructure: data
+            conversion, policy training loops, distributed launch reliability, GPU memory profiling,
+            throughput measurement, and benchmark evaluation.
+          </p>
+        </div>
+        <div class="hero-media">
+          <video autoplay muted loop playsinline preload="metadata">
+            <source src="assets/videos/libero100_sample_task_render.mp4" type="video/mp4" />
+          </video>
+        </div>
       </div>
     </header>
 
     <main>
       <section id="overview" class="section">
         <div class="section-heading">
-          <p class="kicker">Project setup</p>
-          <h2>Dataset, task, and environment</h2>
+          <p class="kicker">What I built</p>
+          <h2>Robot-learning stack, not only a policy result</h2>
+          <p>
+            The work spans two policy families. For LeRobot ACT, I built local conversion,
+            training, and LIBERO benchmark evaluation paths for LIBERO-Spatial. For OpenVLA, I
+            converted LIBERO HDF5 demonstrations into RLDS/TFDS datasets and benchmarked
+            distributed LoRA strategies for the LIBERO-90 and LIBERO-100 training target.
+          </p>
         </div>
         <div class="overview-grid">
           <article>
-            <h3>Dataset</h3>
+            <h3>ACT policy training</h3>
             <p>
-              LIBERO demonstration data was converted into local LeRobot datasets with agent-view
-              RGB, wrist RGB, robot state, actions, and task IDs for multitask conditioning.
+              Converted LIBERO demos into image-backed LeRobot datasets with agent-view RGB, wrist
+              RGB, robot state, actions, task text, and task IDs. Added ACT-only trainers to avoid
+              brittle upstream import paths and local cache issues.
             </p>
           </article>
           <article>
-            <h3>Task family</h3>
+            <h3>Benchmark evaluation</h3>
             <p>
-              The experiments focus on LIBERO-Spatial bowl-placement tasks. The single-task track
-              starts with placing the black bowl on the plate; the multitask track covers all ten
-              spatial variants.
+              Evaluated policies in LIBERO off-screen simulation from pruned benchmark initial
+              states, saved metrics and rollout videos, and added parallel evaluation for the
+              10-task spatial benchmark.
             </p>
           </article>
           <article>
-            <h3>Environment</h3>
+            <h3>OpenVLA training infra</h3>
             <p>
-              Evaluation runs in LIBERO off-screen simulation on pruned benchmark initial states,
-              not demonstration starts, so reported success reflects benchmark rollout behavior.
+              Added RLDS conversion and dataset registry support, fixed quantized DDP device
+              placement, measured QLoRA/no-quant LoRA/FSDP behavior, and selected practical
+              recipes for 4 x L4 training.
             </p>
           </article>
         </div>
         <div class="overview-stats">
-          <span><strong>62,250</strong> multitask frames</span>
-          <span><strong>10</strong> spatial tasks</span>
-          <span><strong>2</strong> RGB camera views</span>
-          <span><strong>50</strong> eval episodes per benchmark</span>
+          <span><strong>500</strong> LIBERO-Spatial episodes</span>
+          <span><strong>62,250</strong> multitask ACT frames</span>
+          <span><strong>4 x L4</strong> distributed OpenVLA target</span>
+          <span><strong>7B</strong> OpenVLA LoRA fine-tuning</span>
         </div>
       </section>
 
       <section id="single-task" class="case-section">
         <div class="case-header">
           <div>
-            <p class="kicker">Section 1</p>
-            <h2>Single-task policy</h2>
+            <p class="kicker">Track 1</p>
+            <h2>LIBERO-Spatial single-task ACT</h2>
             <p>
-              Goal: make one ACT policy reliably solve the black-bowl placement task, then use
-              rollout failures to decide which training changes are worth testing.
+              The first milestone was to make one ACT policy reliably solve a spatial manipulation
+              task: pick up the black bowl and place it on the plate. I treated this as a closed
+              training system problem: convert data, train, evaluate from benchmark init states,
+              review failures, and run targeted ablations.
             </p>
           </div>
           <div class="score-card">
-            <span>Best result</span>
+            <span>Best benchmark result</span>
             <strong>82%</strong>
-            <p>41 / 50 benchmark episodes</p>
+            <p>41 / 50 pruned-init episodes</p>
           </div>
         </div>
 
         <article class="thinking-block">
-          <p class="label">Single-task thinking process</p>
-          <h3>From rollout review to targeted ablation</h3>
+          <p class="label">Engineering loop</p>
+          <h3>Failure-driven training improvements</h3>
           <ol>
-            <li>Get ACT training and evaluation running end to end on converted LeRobot data.</li>
-            <li>Review failures instead of only watching loss curves.</li>
-            <li>Notice that many failures happen around grasp acquisition and release timing.</li>
-            <li>Oversample gripper-transition windows to put more training signal on those moments.</li>
-            <li>Reduce ACT KL weight from 10.0 to 5.0 and verify on benchmark initial states.</li>
+            <li>Built <code>convert_libero_task_to_lerobot.py</code> for local LeRobot ACT datasets.</li>
+            <li>Built <code>train_libero_act.py</code> and <code>eval_libero_act.py</code> for repeatable training and rollout evaluation.</li>
+            <li>Verified benchmark protocol by using LIBERO <code>.pruned_init</code> states rather than replaying demo starts.</li>
+            <li>Observed grasp/release timing failures in videos and oversampled gripper-transition windows.</li>
+            <li>Lowered ACT KL weight from 10.0 to 5.0; KL 2.0 was worse, giving a useful ablation boundary.</li>
           </ol>
         </article>
 
@@ -101,15 +122,15 @@
             <strong>44%</strong>
           </article>
           <article class="stat-card">
-            <span>After transition oversampling</span>
+            <span>Transition oversampling</span>
             <strong>62%</strong>
           </article>
           <article class="stat-card">
-            <span>After KL 10.0 -> 5.0</span>
+            <span>KL 10.0 -> 5.0</span>
             <strong>82%</strong>
           </article>
           <article class="stat-card">
-            <span>After KL 5.0 -> 2.0</span>
+            <span>KL 5.0 -> 2.0</span>
             <strong>76%</strong>
           </article>
         </div>
@@ -117,9 +138,9 @@
         <div class="video-compare">
           <article>
             <div class="video-copy">
-              <p class="label">Before the KL trick</p>
-              <h3>Transition sampling, default KL</h3>
-              <p>Success plateaued at 31 / 50. Remaining failures were sensitive around grasp and placement.</p>
+              <p class="label">Before</p>
+              <h3>Default KL after transition sampling</h3>
+              <p>Success plateaued at 31 / 50. Remaining failures were concentrated around grasp and placement timing.</p>
             </div>
             <video controls muted playsinline preload="metadata">
               <source src="assets/videos/single_task_before_kl10_failure.mp4" type="video/mp4" />
@@ -127,9 +148,9 @@
           </article>
           <article>
             <div class="video-copy">
-              <p class="label">After the KL trick</p>
-              <h3>Same sampling, lower KL</h3>
-              <p>Reducing the KL penalty gave the policy enough action flexibility to reach 41 / 50.</p>
+              <p class="label">After</p>
+              <h3>Lower KL with the same data path</h3>
+              <p>The final single-task policy reached 41 / 50 benchmark episodes while using the same evaluation protocol.</p>
             </div>
             <video controls muted playsinline preload="metadata">
               <source src="assets/videos/single_task_after_kl5_success.mp4" type="video/mp4" />
@@ -138,32 +159,34 @@
         </div>
       </section>
 
-      <section id="multi-task" class="case-section">
+      <section id="multitask" class="case-section">
         <div class="case-header">
           <div>
-            <p class="kicker">Section 2</p>
-            <h2>Multi-task policy</h2>
+            <p class="kicker">Track 2</p>
+            <h2>LIBERO-Spatial 10-task ACT</h2>
             <p>
-              Goal: train one task-conditioned ACT policy across all ten LIBERO-Spatial tasks and
-              understand why weak tasks do not improve just by sampling them more often.
+              The next step was one task-conditioned ACT policy across all ten LIBERO-Spatial
+              tasks. This exposed the harder systems problem: mean success can look strong while
+              specific tasks fail, so the evaluation stack needed per-task metrics, parallel
+              workers, and controlled ablations.
             </p>
           </div>
           <div class="score-card">
-            <span>Best mean</span>
+            <span>Best 10-task mean</span>
             <strong>69.4%</strong>
-            <p>10-task benchmark average</p>
+            <p>500 benchmark rollouts</p>
           </div>
         </div>
 
         <article class="thinking-block">
-          <p class="label">Multi-task thinking process</p>
-          <h3>From task imbalance hypothesis to architecture ablations</h3>
+          <p class="label">Scaling ACT</p>
+          <h3>Task conditioning and evaluation throughput</h3>
           <ol>
-            <li>Add task IDs so one shared policy can condition on the requested spatial task.</li>
-            <li>Check per-task success instead of only the benchmark mean.</li>
-            <li>Identify weak tasks 04, 05, and 09 as the tempting targets for reweighting.</li>
-            <li>Try task-level oversampling and compare against the original task-conditioned baseline.</li>
-            <li>Observe that oversampling collapses the mean, so the next direction becomes cleaner architecture ablations.</li>
+            <li>Converted all 10 LIBERO-Spatial tasks into one dataset: 500 episodes and 62,250 frames.</li>
+            <li>Added learned discrete task IDs to the ACT encoder and decoder path.</li>
+            <li>Kept the policy inputs compact: agent-view RGB, wrist RGB, robot state, and <code>task_index</code>.</li>
+            <li>Parallelized benchmark evaluation by sharding tasks across worker processes.</li>
+            <li>Used per-task success to identify weak variants instead of optimizing only the aggregate mean.</li>
           </ol>
         </article>
 
@@ -173,7 +196,7 @@
             <strong>69.4%</strong>
           </article>
           <article class="stat-card">
-            <span>Task oversampling attempt</span>
+            <span>Weak-task oversampling</span>
             <strong>22.0%</strong>
           </article>
           <article class="stat-card">
@@ -187,21 +210,21 @@
         </div>
 
         <div class="task-table">
-          <h3>Baseline per-task behavior</h3>
+          <h3>Per-task behavior made the bottleneck visible</h3>
           <table>
             <thead>
               <tr>
                 <th>Task</th>
                 <th>Scenario</th>
-                <th>Success</th>
+                <th>Baseline success</th>
               </tr>
             </thead>
             <tbody>
-              <tr><td>02</td><td>from table center</td><td>0.94</td></tr>
-              <tr><td>03</td><td>on cookie box</td><td>0.92</td></tr>
-              <tr><td>09</td><td>on wooden cabinet</td><td>0.86</td></tr>
-              <tr><td>00</td><td>between plate and ramekin</td><td>0.82</td></tr>
-              <tr><td>05</td><td>on ramekin</td><td>0.16</td></tr>
+              <tr><td>02</td><td>black bowl from table center -> plate</td><td>0.94</td></tr>
+              <tr><td>03</td><td>black bowl on cookie box -> plate</td><td>0.92</td></tr>
+              <tr><td>09</td><td>black bowl on wooden cabinet -> plate</td><td>0.86</td></tr>
+              <tr><td>04</td><td>black bowl in top drawer -> plate</td><td>0.48</td></tr>
+              <tr><td>05</td><td>black bowl on ramekin -> plate</td><td>0.16</td></tr>
             </tbody>
           </table>
         </div>
@@ -209,9 +232,9 @@
         <div class="video-compare">
           <article>
             <div class="video-copy">
-              <p class="label">Before the oversampling trick</p>
-              <h3>Task-conditioned baseline</h3>
-              <p>The baseline has a strong mean, but task 05 remains a hard failure case.</p>
+              <p class="label">Hard task</p>
+              <h3>Task 05 remained weak</h3>
+              <p>The benchmark mean hid a severe failure mode on the ramekin placement variant.</p>
             </div>
             <video controls muted playsinline preload="metadata">
               <source src="assets/videos/task05_single_task_failure.mp4" type="video/mp4" />
@@ -219,13 +242,181 @@
           </article>
           <article>
             <div class="video-copy">
-              <p class="label">After the oversampling trick</p>
-              <h3>Oversampling weak tasks</h3>
-              <p>The plausible fix backfires: benchmark mean drops from 69.4% to 22.0%.</p>
+              <p class="label">Ablation</p>
+              <h3>Oversampling was not enough</h3>
+              <p>Task-level oversampling of weak tasks collapsed the mean, showing that the issue was not just sample count.</p>
             </div>
             <video controls muted playsinline preload="metadata">
               <source src="assets/videos/multitask_bad_oversampling_failure.mp4" type="video/mp4" />
             </video>
+          </article>
+        </div>
+      </section>
+
+      <section id="mlinfra" class="case-section">
+        <div class="case-header">
+          <div>
+            <p class="kicker">Track 3</p>
+            <h2>LIBERO-100 / OpenVLA multi-GPU training infrastructure</h2>
+            <p>
+              For the larger embodied-AI model path, I moved from small ACT policies to OpenVLA-7B
+              fine-tuning. The local LIBERO-100 target is represented as true LIBERO-90 plus
+              LIBERO-10, not a synthetic spatial/object/goal merge. The work focused on data
+              correctness, DDP reliability, memory headroom, and throughput tradeoffs on 4 x L4.
+            </p>
+          </div>
+          <div class="score-card">
+            <span>Recommended recipe</span>
+            <strong>DDP</strong>
+            <p>4-bit LoRA, rank 32, effective batch 64</p>
+          </div>
+        </div>
+
+        <div class="overview-grid two-plus-one">
+          <article>
+            <h3>RLDS / TFDS conversion</h3>
+            <p>
+              Added an OpenVLA-compatible converter from official LIBERO HDF5 demonstrations to
+              RLDS/TFDS. Verified smoke conversion and TFDS loading, then added dataset registry
+              entries for <code>libero_90_no_noops</code>, <code>libero_10_no_noops</code>, and the <code>libero_100_no_noops</code>
+              mixture.
+            </p>
+          </article>
+          <article>
+            <h3>Distributed launch fixes</h3>
+            <p>
+              Patched quantized model loading to use per-rank device maps and enabled DDP static
+              graph behavior to avoid LoRA plus gradient-checkpointing repeated-ready errors.
+              Verified 4-GPU `torchrun` smoke runs outside the sandbox.
+            </p>
+          </article>
+          <article>
+            <h3>Benchmark harness</h3>
+            <p>
+              Wrote short-run benchmark summaries with per-rank peak allocated/reserved memory,
+              `nvidia-smi` peak memory, optimizer-step timing, effective batch size, and samples
+              per second. This made strategy selection evidence-based rather than preference-based.
+            </p>
+          </article>
+        </div>
+
+        <div class="task-table infra-table">
+          <h3>4 x L4 strategy comparison</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Strategy</th>
+                <th>Config</th>
+                <th>Peak memory</th>
+                <th>Throughput</th>
+                <th>Takeaway</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>DDP QLoRA</td>
+                <td>rank 32, mb8 x ga2, effective batch 64</td>
+                <td>21,779 MiB</td>
+                <td>5.68 samples/s</td>
+                <td>Fastest measured quantized recipe, but close to the L4 memory ceiling.</td>
+              </tr>
+              <tr>
+                <td>DDP QLoRA</td>
+                <td>rank 32, mb4 x ga4, effective batch 64</td>
+                <td>14,813 MiB</td>
+                <td>5.17 samples/s</td>
+                <td>Better headroom with only a modest throughput drop.</td>
+              </tr>
+              <tr>
+                <td>DDP no-quant LoRA</td>
+                <td>rank 32, mb1 x ga16, effective batch 64</td>
+                <td>22,471 MiB</td>
+                <td>7.39 samples/s</td>
+                <td>Fast, but memory-tight on 23 GB L4 cards.</td>
+              </tr>
+              <tr>
+                <td>FSDP whole model</td>
+                <td>rank 32, mb1 x ga16, HF gradient checkpointing</td>
+                <td>22,487 MiB</td>
+                <td>0.46 samples/s</td>
+                <td>Much slower in this setup; not the practical training path.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="stat-grid">
+          <article class="stat-card">
+            <span>No-quant rank 32 trainable params</span>
+            <strong>110.8M</strong>
+          </article>
+          <article class="stat-card">
+            <span>No-quant rank 16 trainable params</span>
+            <strong>55.4M</strong>
+          </article>
+          <article class="stat-card">
+            <span>Rank 16 memory result</span>
+            <strong>22.5 GiB</strong>
+          </article>
+          <article class="stat-card">
+            <span>Practical conclusion</span>
+            <strong>QLoRA</strong>
+          </article>
+        </div>
+
+        <div class="video-compare">
+          <article>
+            <div class="video-copy">
+              <p class="label">LIBERO-90 sample</p>
+              <h3>Converted training trajectory render</h3>
+              <p>Sample rollout render used to sanity-check conversion, task metadata, and visual inputs.</p>
+            </div>
+            <video controls muted playsinline preload="metadata">
+              <source src="assets/videos/libero90_training_demo_policy_rollout.mp4" type="video/mp4" />
+            </video>
+          </article>
+          <article>
+            <div class="video-copy">
+              <p class="label">LIBERO-100 target</p>
+              <h3>Mixture sanity check</h3>
+              <p>LIBERO-100 is handled as the local <code>libero_90_no_noops + libero_10_no_noops</code> mixture.</p>
+            </div>
+            <video controls muted playsinline preload="metadata">
+              <source src="assets/videos/libero100_training_demo_policy_rollout.mp4" type="video/mp4" />
+            </video>
+          </article>
+        </div>
+      </section>
+
+      <section id="evidence" class="section">
+        <div class="section-heading">
+          <p class="kicker">Why this is MLInfra work</p>
+          <h2>Systems lessons I would bring to embodied-AI training</h2>
+        </div>
+        <div class="overview-grid">
+          <article>
+            <h3>Data correctness first</h3>
+            <p>
+              The training result is only meaningful if conversion preserves image streams,
+              action/state shape, task identity, and benchmark initialization semantics. I built
+              conversion manifests and smoke checks before running longer training jobs.
+            </p>
+          </article>
+          <article>
+            <h3>Measure the actual bottleneck</h3>
+            <p>
+              Reducing LoRA rank from 32 to 16 halved trainable parameters, but did not materially
+              reduce no-quant peak memory. The bottleneck was dominated by the 7B base model,
+              DDP/activation/startup allocations, and memory reservation behavior.
+            </p>
+          </article>
+          <article>
+            <h3>Pick the recipe from evidence</h3>
+            <p>
+              On this hardware, DDP plus 4-bit LoRA is the robust path. FSDP reduced the conceptual
+              model-sharding concern but was far slower in the measured setup, while no-quant LoRA
+              left too little memory headroom for stable production runs.
+            </p>
           </article>
         </div>
       </section>
